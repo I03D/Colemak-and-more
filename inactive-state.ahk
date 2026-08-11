@@ -23,7 +23,12 @@ TraySetIcon("inactive.ico")
 	config := A_ScriptDir . "\config.ini"
 	If GetKeyState("s","p") {
 		iniPath := A_ScriptDir "\config.ini"
-		fromFile := IniRead(iniPath, "Inactive-state", "From", "")
+		If (A_IsCompiled) {
+			Istate := "Inactive-state-compiled"
+		} else {
+			Istate := "Inactive-state-not-compiled"
+		}
+		fromFile := IniRead(iniPath, Istate, "From", "")
 
 		path := fromFile
 		Run path

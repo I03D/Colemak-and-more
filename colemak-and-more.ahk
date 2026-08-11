@@ -203,7 +203,7 @@ If (A_IsCompiled) {
 	Istate := "Inactive-state-not-compiled"
 }
 WhatToUse := IniRead(config, Istate, "WhatToUse", "")
-MsgBox(WhatToUse)
+;MsgBox(WhatToUse)
 
 
 
