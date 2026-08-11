@@ -6,9 +6,8 @@ TraySetIcon("icon.ico")
 
 If !WinExist("lettersOverlay.pyw run") {
 	Run("lettersOverlay.pyw")
-	WinWaitActive("lettersOverlay.pyw run", 3)
-	MsgBox("test")
-	WinMinimize("lettersOverlay.pyw run")
+	WinWaitActive("lettersOverlay.pyw run", , 3)
+	try WinMinimize("lettersOverlay.pyw run")
 }
 
 Run("pythonw labelWidget.pyw `"Activated AHK`"")
