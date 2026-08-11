@@ -1,28 +1,32 @@
+
 import sys
 import random
 import argparse
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
 from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QBrush, QFontMetrics, QPixmap
-from PyQt5.QtCore import Qt, QTimer, QRectF
+from PyQt5.QtCore import Qt, QTimer, QRectF, QSize
 
-# --- ЧАСТЬ 1: Виджет выпрыгивающего объекта ---
+# Импорт для работы с Windows API (только если ОС Windows)
+import ctypes
+import platform
+
 class AnimatedWordWidget(QWidget):
     def __init__(self, word='A', font_size=34):
         super().__init__()
         self.word = word
         self.font_size = font_size
         
-        # Настройки окна
-        self.setWindowFlags(Qt.WindowTransparentForInput | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        
+        # Настройки прозрачности и игнорирования мыши
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        # Этот атрибут говорит Qt не обрабатывать события мыши для этого виджета
+        self.setAttribute(Qt.WA_TransparentForMouseEvents, True) 
+        self.setFocusPolicy(Qt.NoFocus) 
+
         self.resize(800, 600)
-        self.center_widget()
 
         # Анимационные параметры
         self.reset_animation_params()
 
-        # Таймер анимации (16 мс ≈ 60 FPS)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_animation)
         
@@ -38,14 +42,6 @@ class AnimatedWordWidget(QWidget):
         self.gravity = 0.8
         self.initial_angle = random.uniform(-9, 9)
         self.alpha = 255
-
-    def center_widget(self):
-        screen = QApplication.primaryScreen().geometry()
-        size = self.geometry()
-        self.move(
-            int((screen.width() - size.width()) / 2),
-            int((screen.height() - size.height()) / 2)
-        )
 
     def update_animation(self):
         if not self.is_animating:
@@ -63,7 +59,6 @@ class AnimatedWordWidget(QWidget):
             self.is_animating = False
             self.timer.stop()
             
-            # ЗАКРЫТИЕ ПРОГРАММЫ ПОСЛЕ АНИМАЦИИ
             app = QApplication.instance()
             if app:
                 app.quit()
@@ -72,7 +67,7 @@ class AnimatedWordWidget(QWidget):
         self.update()
 
     def start_animation(self):
-        """Запускает новую анимацию с текущими параметрами."""
+        """Запускает новую анимацию."""
         self.reset_animation_params()
         self.is_animating = True
         self.timer.start(16)
@@ -85,6 +80,7 @@ class AnimatedWordWidget(QWidget):
         center = rect.center()
 
         painter.save()
+        
         painter.translate(0, self.bounce)
 
         painter.translate(center.x(), center.y())
@@ -113,7 +109,6 @@ class AnimatedWordWidget(QWidget):
             content_height
         )
 
-        # Фон
         bg_base_alpha = 100 
         final_bg_alpha = max(0, int(bg_base_alpha * (self.alpha / 255.0)))
         bg_color = QColor(0, 0, 0, final_bg_alpha)
@@ -122,7 +117,6 @@ class AnimatedWordWidget(QWidget):
         painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(target_rect, corner_radius, corner_radius)
 
-        # Рамка
         frame_base_alpha = 200 
         final_frame_alpha = max(0, int(frame_base_alpha * (self.alpha / 255.0)))
         frame_color = QColor(30, 30, 30, final_frame_alpha)
@@ -132,7 +126,6 @@ class AnimatedWordWidget(QWidget):
         painter.setBrush(Qt.NoBrush)
         painter.drawRoundedRect(target_rect, corner_radius, corner_radius)
 
-        # Текст
         text_color = QColor("yellow")
         final_text_alpha = max(0, int(255 * (self.alpha / 255.0)))
         text_color.setAlpha(final_text_alpha)
@@ -143,41 +136,74 @@ class AnimatedWordWidget(QWidget):
         painter.restore()
 
 
-# --- ГЛАВНЫЙ КОНТРОЛЛЕР ---
 class MainWindow(QWidget):
     def __init__(self, screen_size, message_text):
         super().__init__()
 
-        # Используем переданный screen_size вместо self.size
         self.setGeometry(0, 0, screen_size.width(), screen_size.height())
         
-        flags = self.windowFlags()
-        self.setWindowFlags(flags | Qt.WindowTransparentForInput | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        # 1. Основные флаги: Tool (скрывает из панели задач), Frameless, StaysOnTop
+        # 2. ДОБАВЛЕНО: Qt.WindowDoesNotAcceptFocus - критически важно для клавиатуры!
+        # Это запрещает окну получать фокус даже если пользователь кликнет по нему.
+        flags = (Qt.Tool | 
+                 Qt.FramelessWindowHint | 
+                 Qt.WindowStaysOnTopHint | 
+                 Qt.WindowDoesNotAcceptFocus)
         
-        self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        self.setWindowFlags(flags)
+        
+        # Прозрачность фона
         self.setAttribute(Qt.WA_TranslucentBackground, True)
+        
+        # Игнорирование мыши для всего окна (и всех детей)
+        self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
 
-        # --- ЛОГИКА ЗАПУСКА ---
-        # Теперь текст передается извне
+        # Создаем виджет анимации
         self.active_widget = AnimatedWordWidget(message_text, font_size=48)
+        
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.active_widget)
+        self.setLayout(layout)
+        
         self.active_widget.start_animation()
         
         self.show()
+        
+        # --- СПЕЦИФИКА ДЛЯ WINDOWS ---
+        # На Windows иногда требуется явное указание стиля WS_EX_TRANSPARENT,
+        # чтобы клики гарантированно проходили сквозь окно, даже если WA_TransparentForMouseEvents не сработал.
+        if platform.system() == "Windows":
+            try:
+                hwnd = int(self.winId())
+                # Получаем текущие расширенные стили окна
+                GWL_EXSTYLE = -20
+                WS_EX_LAYERED = 0x00080000
+                WS_EX_TRANSPARENT = 0x00000020
+                
+                user32 = ctypes.windll.user32
+                
+                # Получаем текущий стиль
+                current_style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+                
+                # Добавляем флаг прозрачности для мыши
+                new_style = current_style | WS_EX_TRANSPARENT
+                
+                # Устанавливаем новый стиль
+                user32.SetWindowLongW(hwnd, GWL_EXSTYLE, new_style)
+            except Exception as e:
+                print(f"Не удалось применить стиль Windows: {e}")
 
 if __name__ == '__main__':
-    # 1. Настройка парсера аргументов
-    parser = argparse.ArgumentParser(description="Анимированная надпись, принимает строку в аргумент.")
+    parser = argparse.ArgumentParser(description="Анимированная надпись (оверлей без перехвата фокуса).")
     parser.add_argument('text', nargs='?', default="Empty label", help='Текст для отображения в анимации')
     args = parser.parse_args()
 
     app = QApplication(sys.argv)
     screen_size = app.primaryScreen().size()
-
-    # Установка стиля для корректной работы прозрачности
     app.setStyle("Fusion")
 
-    # 2. Передача текста в MainWindow
     window = MainWindow(screen_size, args.text)
-    window.setWindowTitle("labelWidget.pyw run")  # <-- установка заголовка
+    window.setWindowTitle("Hidden Animation Tool") 
     
     sys.exit(app.exec_())

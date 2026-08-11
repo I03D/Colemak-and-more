@@ -25,8 +25,11 @@ ActivateRun(Title) {
 		WinActivate(Title)
 	} Else {
 		Run(Title)
-		WinWait(Title)
-		WinActivate(Title)
+		hwnd := WinWait(Title)
+		If hwnd = "" {
+		} Else {
+			WinActivate(Title)
+		}
 	}
 }
 
@@ -194,16 +197,25 @@ MoveM() {
 	}
 }
 
-WhatToUse := IniRead(config, "Inactive-state", "WhatToUse", "")
+Istate := "Inactive-state-not-compiled"
+If (A_IsCompiled) {
+	Istate := "Inactive-state-compiled"
+} Else {
+	Istate := "Inactive-state-not-compiled"
+}
+WhatToUse := IniRead(config, Istate, "WhatToUse", "")
+MsgBox(WhatToUse)
 
 
 
 *SC01F::{
 	global alttab
 	global mouseless
+	global allowStartMenu
 
 	If ((GetKeyState("LAlt","p") || GetKeyState("RAlt","p"))) && !altmode {
 		If ((GetKeyState("RWin","p") || GetKeyState("LWin","p"))) {
+			allowStartMenu := False
 			;Suspend
 			if (WhatToUse != "") {
 				scriptToRun := A_ScriptDir . "\" WhatToUse
@@ -586,7 +598,7 @@ XButton2:: {
 		If (layout == "en_col") {
 			Send "{blind}o"
 		} else {
-			Send "{blind}{;}"
+			Send "{blind}{SC027}"
 		}
 	} Else If mousemode == "set" {
 		global mousemode
