@@ -13,6 +13,8 @@ If !WinExist("lettersOverlay.pyw run") {
 Run("pythonw labelWidget.pyw `"Activated AHK`"")
 
 config := A_ScriptDir . "\config.ini"
+CapsLock_eq_Escape := IniRead(config, "settings", "capslock-eq-escape", "")
+alt_pl_apostrophe_eq_enter := IniRead(config, "settings", "alt+apostrophe-eq-enter", "")
 ;IniWrite("", config, "LettersOverlay", "Message")
 
 layout := "en_col"
@@ -260,7 +262,9 @@ WhatToUse := IniRead(config, Istate, "WhatToUse", "")
 
 *SC028::{
 	If ((GetKeyState("Lalt","p") || GetKeyState("Ralt","p"))) && !altmode {
-		Send "{blind}{Enter}"
+		If (alt_pl_apostrophe_eq_enter = "True") {
+			Send "{blind}{Enter}"
+		}
 	} Else If !mouseless
 	{
 		Send "{blind}{SC028}"
@@ -623,15 +627,19 @@ XButton2:: {
 
 capslock::
 {
-	If mouseless == True {
-		global mouseless
-		mouseless := False
-	} Else If ((GetKeyState("Lalt","p") || GetKeyState("Ralt","p"))) && !altmode {
-		global mouseless
-		mouseless := False
-	} else Send "{Esc}"
+	If (capslock_eq_escape = "True") {
+		If mouseless == True {
+			global mouseless
+			mouseless := False
+		} Else If ((GetKeyState("Lalt","p") || GetKeyState("Ralt","p"))) && !altmode {
+			global mouseless
+			mouseless := False
+		} else Send "{Esc}"
+	} Else {
+	    SetCapsLockState(!GetKeyState("CapsLock", "T"))		
+	}
 }
-!capslock::Send "{capslock}"
+!capslock::setCapsLockState(!GetKeyState("CapsLock", "T"))		
 
 *SC01E::
 {
