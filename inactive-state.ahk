@@ -1,3 +1,5 @@
+;#SingleInstance Force
+
 TraySetIcon("inactive.ico")
 
 ;*SC01F::
