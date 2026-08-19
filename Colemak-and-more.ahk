@@ -24,7 +24,7 @@ ActivateRun(Title) {
 		WinActivate(Title)
 	} Else {
 		Run(Title)
-		hwnd := WinWait(Title)
+		hwnd := WinWait(Title, 1)
 		If hwnd = "" {
 		} Else {
 			WinActivate(Title)
@@ -220,12 +220,12 @@ WhatToUse := IniRead(config, Istate, "WhatToUse", "")
 				scriptToRun := A_ScriptDir . "\" WhatToUse
 				Run(scriptToRun)
 				IniWrite("Inactive", config, "LettersOverlay", "Message")
-				ActivateRun(A_ScriptDir . "\labelWidget.pyw Inactive")
+				Run(A_ScriptDir . "\labelWidget.pyw Inactive")
 				ExitApp
 			} else {
 				IniWrite("Suspend", config, "LettersOverlay", "Message")
 				;WinActivate(A_ScriptDir . "\labelWidget.pyw Suspend")
-				ActivateRun(A_ScriptDir . "\labelWidget.pyw Suspend")
+				Run(A_ScriptDir . "\labelWidget.pyw Suspend")
 				;WinActivate("pythonw")
 				Suspend
 			}
@@ -784,6 +784,8 @@ rus_layout() {
 	if layout != "ru" {
 		Send "{Ralt Down}{Shift}{Ralt Up}"
 		Send "{Lalt Down}{Shift}{Lalt Up}"
+		WinID := WinExist("A")	
+		SendMessage(0x50, 0x0409, 0, WinID)
 	}
 	layout := "ru"
 }
@@ -791,8 +793,10 @@ rus_layout() {
 en_col_layout() {
 	global layout
 	if layout == "ru" {
-		Send "{Ralt Down}{Shift}{Ralt Up}"
-		Send "{Lalt Down}{Shift}{Lalt Up}"
+		;send "{Ralt Down}{Shift}{Ralt Up}"
+		;send "{Lalt Down}{Shift}{Lalt Up}"
+		WinID := WinExist("A")
+		SendMessage(0x50, 0x0419, 0, WinID)
 	}
 	layout := "en_col"
 }
@@ -800,10 +804,11 @@ en_col_layout() {
 en_layout() {
 	global layout
 	if layout == "ru" {
-		Send "{Ralt Down}{Shift}{Ralt Up}"
-		Send "{Lalt Down}{Shift}{Lalt Up}"
+		;Send "{Ralt Down}{Shift}{Ralt Up}"
+		;Send "{Lalt Down}{Shift}{Lalt Up}"
+		WinID := WinExist("A")
+		SendMessage(0x50, 0x0409, 0, WinID)
 	}
-
 	layout := "en"
 }
 

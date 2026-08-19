@@ -35,7 +35,7 @@ TraySetIcon("inactive.ico")
 		path := fromFile
 		Run path
 		IniWrite("Activated AHK", config, "LettersOverlay", "Message")
-		Run (A_ScriptDir . "\labelWidget.pyw Activated AHK")
+		Run (A_ScriptDir . "\labelWidget.pyw Activated")
 		ExitApp
 	}
 	else {
