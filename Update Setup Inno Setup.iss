@@ -4,7 +4,6 @@
 
 #define MyAppName "Colemak-and-more"
 #define MyAppVersion "1.0"
-#define MyAppPublisher "I"
 #define MyAppURL "https://github.com/I03D/Colemak-and-more"
 #define MyAppExeName "Colemak-and-more.exe"
 #define DoubleAmp(Value) StringChange(Value, "&", "&&")
@@ -13,11 +12,10 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{BF3DFF43-4A27-4123-B7FC-D8EC6D341ED5}
+AppId={{FFDB22D6-5E3E-4106-8AB1-EC648D0B375B}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={cm:NameAndVersion,{#EscapeConstArgument(MyAppName)},{#EscapeConstArgument(MyAppVersion)}}
-AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
@@ -36,7 +34,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=C:\Users\user\Desktop\Colemak-and-more-main
 OutputBaseFilename=Setup Colemak-and-more
-SetupIconFile=C:\Users\user\Desktop\Colemak-and-more-main\setupIcon.ico
+SetupIconFile=C:\Users\user\Desktop\Colemak-and-more-main\icon.ico
 SolidCompression=yes
 WizardStyle=modern dynamic
 

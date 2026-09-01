@@ -1,45 +1,42 @@
 from PyQt5.QtWidgets import QApplication, QGridLayout, QWidget, QSizePolicy
-from PyQt5.QtCore import Qt, QRect, QTimer
+from PyQt5.QtCore import Qt, QRect, QEvent, QTimer
 from PyQt5.QtGui import QPainter, QColor, QPen
 import sys
+import ctypes
 
-# Виджет, который рисует круг и текст внутри него
+
 class CircleLabel(QWidget):
     def __init__(self, letter):
         super().__init__()
         self.letter = letter
-        # Разрешаем растягиваться в клетке сетки
+        self.show_letter = False
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def paintEvent(self, event):
+        if not self.show_letter:
+            return
+
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing) # Сглаживание краёв
+        painter.setRenderHint(QPainter.Antialiasing)
 
         rect = self.rect()
         if rect.isNull():
             return
 
-        # Вычисляем максимально вписывающийся в клетку круг
         diameter = int(min(rect.width(), rect.height()) * 0.3)
-
         x = (rect.width() - diameter) // 2
         y = (rect.height() - diameter) // 2
         circle_rect = QRect(x, y, diameter, diameter)
 
-        # Полупрозрачный чёрный фон внутри круга и тонкая обводка
         bg_color = QColor(0, 0, 0, 75)
         painter.setBrush(bg_color)
         painter.setPen(QPen(QColor(0, 0, 0, 125), 2))
-
         painter.drawEllipse(circle_rect)
 
-        # Центрируем букву внутри круга
         font = painter.font()
         font.setBold(True)
-        font_size = 34
-        font.setPointSize(font_size)
+        font.setPointSize(34)
         painter.setFont(font)
-
         painter.setPen(QColor("yellow"))
         painter.drawText(circle_rect, Qt.AlignCenter, self.letter)
 
@@ -48,22 +45,26 @@ class Window(QWidget):
     def __init__(self, screen_size):
         super().__init__()
 
-        # Настройка геометрии на весь экран
         self.setGeometry(0, 0, screen_size.width(), screen_size.height())
 
         self.setStyleSheet("background-color: transparent;")
-        self.setAttribute(Qt.WA_NoSystemBackground, True) 
+        self.setAttribute(Qt.WA_NoSystemBackground, True)
 
-        # Базовые флаги окна
         flags = self.windowFlags()
-        # Убрали Qt.Tool, оставили только FramelessWindowHint
-        self.setWindowFlags(flags | Qt.FramelessWindowHint | Qt.Tool)
+        self.setWindowFlags(
+            flags | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        )
 
         grid_layout = QGridLayout()
         grid_layout.setSpacing(20)
         grid_layout.setContentsMargins(20, 20, 20, 20)
 
-        new_letters = ['a', 'r', 's', 't', 'v', 'd', 'c', 'x', 'n', 'e', 'i', 'o', '/', '.', ',', 'h']
+        new_letters = [
+            'a', 'r', 's', 't', 'v', 'd', 'c',
+            'x', 'n', 'e', 'i', 'o', '/', '.', ',', 'h'
+        ]
+
+        self.circle_labels = []
 
         idx = 0
         for row in range(4):
@@ -71,46 +72,62 @@ class Window(QWidget):
                 if idx < len(new_letters):
                     circle_label = CircleLabel(new_letters[idx])
                     grid_layout.addWidget(circle_label, row, col)
+                    self.circle_labels.append(circle_label)
                 idx += 1
 
         self.setLayout(grid_layout)
 
-        # Равномерное распределение по сетке
         for i in range(4):
             grid_layout.setColumnStretch(i, 1)
             grid_layout.setRowStretch(i, 1)
 
-        # --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
-        # Сначала устанавливаем состояние минимизации, ПОТОМ показываем окно
-        self.setWindowState(Qt.WindowMinimized)
-        self.showMinimized()
-        # -------------------------
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
 
-        # Применяем прозрачность и игнорирование мыши сразу при старте
+        # Флаг: первая активация окна поглощается — оверлей
+        # стартует в скрытом состоянии, как будто уже потерял фокус.
+        self._first_activation = True
+
+        self.show()
+
+        hwnd = int(self.winId())
+        GWL_EXSTYLE = -20
+        WS_EX_TOOLWINDOW = 0x00000080
+        ex_style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+        ctypes.windll.user32.SetWindowLongW(
+            hwnd, GWL_EXSTYLE, ex_style | WS_EX_TOOLWINDOW
+        )
+
         self._make_invisible()
+
+        self._debounce_timer = QTimer(self)
+        self._debounce_timer.setSingleShot(True)
+        self._debounce_timer.setInterval(150)
+        self._debounce_timer.timeout.connect(self._make_invisible)
+
+    def event(self, e):
+        if e.type() == QEvent.WindowActivate:
+            if self._first_activation:
+                # Гасим первую активацию от show() — буквы остаются скрытыми
+                self._first_activation = False
+                self._make_invisible()
+            else:
+                self._debounce_timer.stop()
+                self._make_visible()
+        elif e.type() == QEvent.WindowDeactivate:
+            self._debounce_timer.start()
+        return super().event(e)
 
     def _make_invisible(self):
-        """Делает окно полностью прозрачным и некликабельным"""
         self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-        self.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.clearFocus()
+        for cl in self.circle_labels:
+            cl.show_letter = False
+            cl.update()
 
     def _make_visible(self):
-        """Делает окно видимым и кликабельным"""
         self.setAttribute(Qt.WA_TransparentForMouseEvents, False)
-        self.setAttribute(Qt.WA_TranslucentBackground, False)
-
-    def focusInEvent(self, event):
-        """Срабатывает, когда окно получает фокус"""
-        super().focusInEvent(event)
-        self._make_visible()
-        print("Окно в фокусе. Буквы видны.")
-
-    def focusOutEvent(self, event):
-        """Срабатывает, когда окно теряет фокус"""
-        super().focusOutEvent(event)
-        self._make_invisible()
-        print("Фокус потерян. Окно прозрачно.")
+        for cl in self.circle_labels:
+            cl.show_letter = True
+            cl.update()
 
 
 if __name__ == '__main__':
@@ -122,6 +139,6 @@ if __name__ == '__main__':
     size = screen.size()
 
     window = Window(size)
-    window.setWindowTitle("lettersOverlay.pyw run") # <-- установка заголовка
+    window.setWindowTitle("lettersOverlay.pyw run")
 
     sys.exit(app.exec_())
