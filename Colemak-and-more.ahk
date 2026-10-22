@@ -6,7 +6,7 @@ TraySetIcon("icon.ico")
 
 If !WinExist("lettersOverlay.pyw run") {
 	Run("lettersOverlay.pyw")
-	WinWaitActive("lettersOverlay.pyw run", , 3)
+	;WinWaitActive("lettersOverlay.pyw run", , 3)
 	try WinMinimize("lettersOverlay.pyw run")
 }
 
@@ -32,6 +32,15 @@ ActivateRun(Title) {
 			WinActivate(Title)
 		}
 	}
+}
+
+GetCurrentLayout() {
+    WinID := WinExist("A")
+    if !WinID
+        return 0
+    ThreadID := DllCall("GetWindowThreadProcessId", "UInt", WinID, "Ptr", 0, "UInt")
+    Layout := DllCall("GetKeyboardLayout", "UInt", ThreadID, "UInt") & 0xFFFF
+    return Format("0x{:04X}", Layout)
 }
 
 allowStartMenu := True
@@ -782,27 +791,33 @@ capslock::
 ;SC023::MouseMove 20, 30, 50, "R"
 
 rus_layout() {
+	; MsgBox("test1")
 	global layout
-	if layout != "ru" {
-		Send "{Ralt Down}{Shift}{Ralt Up}"
+	CurrentLayout := GetCurrentLayout()
+	if CurrentLayout != "0x0419" {
+		; MsgBox("test2")
 		Send "{Lalt Down}{Shift}{Lalt Up}"
 	}
 	layout := "ru"
 }
 
 en_col_layout() {
+	; MsgBox("test3")
 	global layout
-	if layout == "ru" {
-		Send "{Ralt Down}{Shift}{Ralt Up}"
+	CurrentLayout := GetCurrentLayout()
+	if CurrentLayout != "0x0409" {
+		; MsgBox("test4")
 		Send "{Lalt Down}{Shift}{Lalt Up}"
+
 	}
 	layout := "en_col"
+
 }
 
 en_layout() {
 	global layout
-	if layout == "ru" {
-		Send "{Ralt Down}{Shift}{Ralt Up}"
+	CurrentLayout := GetCurrentLayout()
+	if CurrentLayout != "0x0409" {
 		Send "{Lalt Down}{Shift}{Lalt Up}"
 	}
 
@@ -1207,4 +1222,7 @@ SC0F::
 		Send "{Rshift Down}{tab}{RShift Up}"
 	}
 }
+
+en_col_layout()
+
 
