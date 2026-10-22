@@ -640,6 +640,7 @@ capslock::
 		If mouseless == True {
 			global mouseless
 			mouseless := False
+			WinMinimize("lettersOverlay.pyw run")
 		} Else If ((GetKeyState("Lalt","p") || GetKeyState("Ralt","p"))) && !altmode {
 			global mouseless
 			mouseless := False

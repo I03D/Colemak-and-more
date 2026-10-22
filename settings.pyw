@@ -34,7 +34,7 @@ class SettingsWindow(QWidget):
         row = 0
 
         # --- Заголовок ---
-        title = QLabel("Параметры colemak-and-more")
+        title = QLabel("Colemak-and-more")
         font_size = self.config.get('settings', 'font_size', fallback='14')
         title.setAlignment(Qt.AlignCenter)
         title.setStyleSheet(f"font-size: {font_size}px; font-weight: bold; padding-bottom: 10px;")
