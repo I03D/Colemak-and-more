@@ -644,6 +644,7 @@ capslock::
 		} Else If ((GetKeyState("Lalt","p") || GetKeyState("Ralt","p"))) && !altmode {
 			global mouseless
 			mouseless := False
+			WinMinimize("lettersOverlay.pyw run")
 		} else Send "{Esc}"
 	} Else {
 	    SetCapsLockState(!GetKeyState("CapsLock", "T"))		
