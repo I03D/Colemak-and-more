@@ -13,6 +13,7 @@
 | Alt+n | Заблокировать сессию Windows (выполняет Win+L) |
 
 # Установка:
-Могут потребоваться установленный язык/интерпретатор Python (https://www.python.org/downloads/windows/) и библиотека PyQt5:
+Могут потребоваться установленный язык/интерпретатор Python (https://www.python.org/downloads/windows/) и библиотеки PyQt5 и psutil:
 
 pip install pyqt5
+pip install psutil
