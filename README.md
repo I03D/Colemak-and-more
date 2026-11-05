@@ -19,6 +19,8 @@
 pip install pyqt5
 pip install psutil
 
+Запустить файл **""Setup Colemak-and-more.exe""** и выполнить установку.
+
 # Добавление в автозагрузку:
 
 ## Через папку автозагрузки:
