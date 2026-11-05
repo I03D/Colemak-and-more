@@ -4,15 +4,36 @@ CoordMode "Mouse", "Screen"
 
 TraySetIcon("icon.ico")
 
+ScriptName:="Colemak-and-more.ahk"
+If WinExist(ScriptName)
+{
+	WinClose(ScriptName)
+}
+
 If !WinExist("lettersOverlay.pyw run") {
 	Run("lettersOverlay.pyw")
 	;WinWaitActive("lettersOverlay.pyw run", , 3)
 	try WinMinimize("lettersOverlay.pyw run")
 }
 
+config := A_ScriptDir . "\config.ini"
+
+If (A_IsCompiled) {
+	IniWrite(".exe", config, "Script", "LastRunIsCompiled")
+} Else {
+	IniWrite(".ahk", config, "Script", "LastRunIsCompiled")
+}
+
 Run("pythonw labelWidget.pyw `"Activated AHK`"")
 
-config := A_ScriptDir . "\config.ini"
+StartShowSettings := IniRead(config, "settings", "start_show_settings", "")
+if StartShowSettings == "True" {
+	Run "pythonw settings.pyw"
+}
+
+colemak_type := IniRead(config, "settings", "colemak_type")
+;MsgBox(colemak_type)
+
 CapsLock_eq_Escape := IniRead(config, "settings", "capslock-eq-escape", "")
 alt_pl_apostrophe_eq_enter := IniRead(config, "settings", "alt+apostrophe-eq-enter", "")
 ;IniWrite("", config, "LettersOverlay", "Message")
@@ -150,7 +171,19 @@ MoveM() {
 	} Else If !mouseless
 	{
 		If (layout == "en_col") {
-			Send "{blind}x"
+			if colemak_type == "Classic" {
+				Send "{blind}z"
+			} else if colemak_type == "DHm" {
+				Send "{blind}z"
+			} else if colemak_type == "ISO" {
+				Send "{blind}z"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}x"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}x"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}z"
+			}
 		} else {
 			Send "{blind}{z}"
 		}
@@ -175,7 +208,19 @@ MoveM() {
 	} Else If !mouseless
 	{
 		If (layout == "en_col") {
-			Send "{blind}c"
+			if colemak_type == "Classic" {
+				Send "{blind}x"
+			} else if colemak_type == "DHm" {
+				Send "{blind}x"
+			} else if colemak_type == "ISO" {
+				Send "{blind}x"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}c"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}c"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}x"
+			}
 		} else {
 			Send "{blind}{x}"
 		}
@@ -194,7 +239,19 @@ MoveM() {
 	} Else If !mouseless
 	{
 		If (layout == "en_col") {
-			Send "{blind}d"
+			if colemak_type == "Classic" {
+				Send "{blind}c"
+			} else if colemak_type == "DHm" {
+				Send "{blind}c"
+			} else if colemak_type == "ISO" {
+				Send "{blind}c"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}d"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}d"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}c"
+			}
 		} else {
 			Send "{blind}{c}"
 		}
@@ -366,7 +423,19 @@ SC03E::{
 	} Else If !mouseless
 	{
 		If (layout == "en_col") {
-			Send "{blind}k"
+			if colemak_type == "Classic" {
+				Send "{blind}k"
+			} else if colemak_type == "DHm" {
+				Send "{blind}k"
+			} else if colemak_type == "ISO" {
+				Send "{blind}k"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}k"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}k"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}k"
+			}
 		} else {
 			Send "{blind}{n}"
 		}
@@ -381,7 +450,19 @@ SC03E::{
 		Run "python browse.py"
 	} Else If !mouseless {
 		If (layout == "en_col") {
-			Send "{blind}h"
+			if colemak_type == "Classic" {
+				Send "{blind}m"
+			} else if colemak_type == "DHm" {
+				Send "{blind}h"
+			} else if colemak_type == "ISO" {
+				Send "{blind}m"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}h"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}h"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}h"
+			}
 		} else {
 			Send "{blind}{m}"
 		}
@@ -743,7 +824,23 @@ capslock::
 		Click "Middle, Up"
 	} Else If !mouseless
 	{
-		Send "{blind}{v}"
+		If (layout == "en_col") {
+			if colemak_type == "Classic" {
+				Send "{blind}v"
+			} else if colemak_type == "DHm" {
+				Send "{blind}d"
+			} else if colemak_type == "ISO" {
+				Send "{blind}v"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}v"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}v"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}d"
+			}
+		} Else {
+			Send "{blind}{v}"
+		}
 	} Else If mousemode == "set" {
 		global mousemode
 		MouseMove xShift, yShift + yGap
@@ -1151,7 +1248,19 @@ Ralt Up::{
 	If !mouseless
 	{
 		If (layout == "en_col") {
-			Send "{blind}b"
+			if colemak_type == "Classic" {
+				Send "{blind}g"
+			} else if colemak_type == "DHm" {
+				Send "{blind}b"
+			} else if colemak_type == "ISO" {
+				Send "{blind}g"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}b"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}b"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}b"
+			}
 		} else {
 			Send "{blind}{t}"
 		}
@@ -1172,13 +1281,48 @@ Ralt Up::{
 }
 
 ;SC01E::a
-;SC022::g
+*SC022::
+{
+	If !mouseless
+	{
+		If (layout == "en_col") {
+			if colemak_type == "Classic" {
+				Send "{blind}d"
+			} else if colemak_type == "DHm" {
+				Send "{blind}g"
+			} else if colemak_type == "ISO" {
+				Send "{blind}d"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}g"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}g"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}g"
+			}
+		} else {
+			Send "{blind}{g}"
+		}
+
+	}
+}
 *SC023::
 {
 	If !mouseless
 	{
 		If (layout == "en_col") {
-			Send "{blind}m"
+			if colemak_type == "Classic" {
+				Send "{blind}h"
+			} else if colemak_type == "DHm" {
+				Send "{blind}m"
+			} else if colemak_type == "ISO" {
+				Send "{blind}h"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}m"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}m"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}m"
+			}
 		} else {
 			Send "{blind}{h}"
 		}
@@ -1191,8 +1335,20 @@ Ralt Up::{
 	If !mouseless
 	{
 		If (layout == "en_col") {
-			Send "{blind}z"
-		} else {
+			if colemak_type == "Classic" {
+				Send "{blind}b"
+			} else if colemak_type == "DHm" {
+				Send "{blind}v"
+			} else if colemak_type == "ISO" {
+				Send "{blind}b"
+			} else if colemak_type == "DHm ISO Angle Mod" {
+				Send "{blind}\"
+			} else if colemak_type == "DHm ISO Angle Mod z->b" {
+				Send "{blind}z"
+			} else if colemak_type == "DHm ISO" {
+				Send "{blind}v"
+			}
+		} Else {
 			Send "{blind}{b}"
 		}
 

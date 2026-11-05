@@ -100,7 +100,7 @@ def move_circle(event):
 
 # Создаём окно
 root = tk.Tk()
-root.title("Обучение для mouseless, keynav и прочих альтернатив мыши")
+root.title("Обучение mouseless, keynav и прочим альтернативам мыши")
 
 # Получаем ширину и высоту экрана
 screen_width = root.winfo_screenwidth()
