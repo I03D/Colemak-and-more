@@ -490,14 +490,16 @@ class SettingsWindow(QWidget):
         radio_row_widget = QWidget()
         radio_row_widget.setLayout(radio_row)
 
-        layout.addWidget(
-            radio_row_widget,
-            row,
-            1,
-            1,
-            2,
-            alignment=Qt.AlignLeft | Qt.AlignTop,
-        )
+##        layout.addWidget(
+##            radio_row_widget,
+##            row,
+##            1,
+##            1,
+##            2,
+##            alignment=Qt.AlignLeft | Qt.AlignTop,
+##        )
+        layout.addWidget(radio_row_widget, row, 1)
+
         row += 1
 
         # Выбор цвета фона.
