@@ -17,11 +17,10 @@
 
 # Установка:
 Могут потребоваться установленный язык/интерпретатор Python (https://www.python.org/downloads/windows/) и библиотеки PyQt5 и psutil:
+1. pip install pyqt5
+2. pip install psutil
 
-pip install pyqt5
-pip install psutil
-
-Запустить файл "**Setup Colemak-and-more.exe**" и выполнить установку.
+- Запустить файл "**Setup Colemak-and-more.exe**" и выполнить установку.
 
 # Добавление в автозагрузку:
 
